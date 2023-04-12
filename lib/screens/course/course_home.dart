@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:mcq_generation_flutter/data/data/data.dart';
 import 'package:mcq_generation_flutter/data/data/data_box.dart';
+import 'package:mcq_generation_flutter/screens/course/course_deatils.dart';
+import 'package:mcq_generation_flutter/screens/router_utils.dart';
 
 class CourseHomeScreen extends StatelessWidget {
   final UserData userData;
@@ -66,13 +68,17 @@ class _CourseCardTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Expanded(
-            child: Image.network(
-              data.imageUrl,
-              fit: BoxFit.cover,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12.0),
+              child: Image.network(
+                data.imageUrl,
+                fit: BoxFit.cover,
+              ),
             ),
           ),
           Padding(
@@ -95,7 +101,9 @@ class _CourseCardTile extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                goTo(CourseDetailsScreen(data: data), context);
+              },
               child: const Text('View Course'),
             ),
           ),
