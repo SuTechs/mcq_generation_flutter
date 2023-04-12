@@ -40,8 +40,8 @@ class DataBox {
 
   /// some helper methods for users
 
-  static void login(UserData userData) =>
-      userBox.put(loggedInUserKey, userData);
+  static void login(UserData userData) => userBox.put(loggedInUserKey,
+      UserData(userData.name, userData.email, userData.password));
 
   static void logout() => userBox.delete(loggedInUserKey);
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mcq_generation_flutter/data/data/data.dart';
+import 'package:mcq_generation_flutter/data/data/data_box.dart';
 
 class CourseHomeScreen extends StatelessWidget {
   final UserData userData;
@@ -8,6 +9,13 @@ class CourseHomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Placeholder();
+    return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        child: const Text('Logout'),
+        onPressed: () {
+          DataBox.logout();
+        },
+      ),
+    );
   }
 }
