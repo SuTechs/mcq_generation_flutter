@@ -88,12 +88,12 @@ class _CourseCardTile extends StatelessWidget {
               children: [
                 Text(
                   data.name,
-                  style: Theme.of(context).textTheme.headline6,
+                  style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const SizedBox(height: 8.0),
                 Text(
                   data.description,
-                  style: Theme.of(context).textTheme.subtitle1,
+                  style: Theme.of(context).textTheme.titleMedium,
                 ),
               ],
             ),
