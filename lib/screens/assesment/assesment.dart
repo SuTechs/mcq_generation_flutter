@@ -68,7 +68,7 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
   }
 
   void _fetchQuestions() async {
-    _dataList = await getQuestionData();
+    _dataList = await getQuestionData(widget.courseData.courseContent);
     setState(() {
       _isLoading = false;
     });

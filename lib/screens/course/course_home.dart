@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:mcq_generation_flutter/data/data/data.dart';
 import 'package:mcq_generation_flutter/data/data/data_box.dart';
+import 'package:mcq_generation_flutter/screens/course/add_course.dart';
 import 'package:mcq_generation_flutter/screens/course/course_deatils.dart';
 import 'package:mcq_generation_flutter/screens/router_utils.dart';
 
@@ -22,7 +23,9 @@ class CourseHomeScreen extends StatelessWidget {
           /// add course button
           if (userData.email == 'admin@admin.com')
             TextButton.icon(
-              onPressed: () {},
+              onPressed: () {
+                goTo(const AddCourse(), context);
+              },
               icon: const Icon(Icons.add_box_outlined),
               label: const Text('Add Course'),
             ),
@@ -49,7 +52,6 @@ class CourseHomeScreen extends StatelessWidget {
               mainAxisSpacing: 32.0, // Set the space between the rows
               crossAxisSpacing: 32.0, // Set the space between the columns
               children: [
-                for (final c in courses) _CourseCardTile(data: c),
                 for (final c in courses) _CourseCardTile(data: c),
               ],
             ),
@@ -78,6 +80,11 @@ class _CourseCardTile extends StatelessWidget {
               child: Image.network(
                 data.imageUrl,
                 fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Icon(
+                  Icons.image_not_supported_outlined,
+                  size: 100,
+                  color: Theme.of(context).colorScheme.secondaryContainer,
+                ),
               ),
             ),
           ),

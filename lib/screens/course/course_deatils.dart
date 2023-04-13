@@ -11,27 +11,40 @@ class CourseDetailsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: const Text("Course Details"),
-          centerTitle: false,
-        ),
-        body: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12.0),
-                  child: Image.network(
-                    data.imageUrl,
-                    fit: BoxFit.cover,
+      appBar: AppBar(
+        title: const Text("Course Details"),
+        centerTitle: false,
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          goTo(AssessmentScreen(courseData: data), context);
+        },
+        label: const Text('Take assessment'),
+        icon: const Icon(Icons.quiz_outlined),
+      ),
+      body: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12.0),
+                child: Image.network(
+                  data.imageUrl,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Icon(
+                    Icons.image_not_supported_outlined,
+                    size: 100,
+                    color: Theme.of(context).colorScheme.secondaryContainer,
                   ),
                 ),
               ),
             ),
-            Expanded(
+          ),
+          Expanded(
+            child: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.max,
                 mainAxisAlignment: MainAxisAlignment.start,
@@ -76,8 +89,10 @@ class CourseDetailsScreen extends StatelessWidget {
                   ),
                 ],
               ),
-            )
-          ],
-        ));
+            ),
+          )
+        ],
+      ),
+    );
   }
 }
