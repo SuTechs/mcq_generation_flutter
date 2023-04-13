@@ -10,6 +10,6 @@ Future<List<QuestionData>> getQuestionData() {
     dataList.add(qData);
   }
 
-  return Future.delayed(const Duration(milliseconds: 3000))
+  return Future.delayed(const Duration(milliseconds: 1000))
       .then((value) => dataList);
 }

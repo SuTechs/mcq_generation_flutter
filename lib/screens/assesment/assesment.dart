@@ -1,8 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mcq_generation_flutter/data/api/api.dart';
 import 'package:mcq_generation_flutter/data/data/data.dart';
-
-var currScore = 0;
 
 class AssessmentScreen extends StatefulWidget {
   final CourseData courseData;
@@ -15,12 +14,14 @@ class AssessmentScreen extends StatefulWidget {
 }
 
 class _AssessmentScreenState extends State<AssessmentScreen> {
-  List<QuestionData> dataList = [];
-  bool isLoading = true;
+  List<QuestionData> _dataList = [];
+  bool _isLoading = true;
+
+  int _currentScore = 0;
 
   @override
   void initState() {
-    fetchQuestions();
+    _fetchQuestions();
 
     super.initState();
   }
@@ -28,39 +29,97 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: isLoading
+      appBar: AppBar(
+        title: Text('${widget.courseData.name} Assessment'),
+      ),
+      floatingActionButton: _isLoading
           ? null
           : FloatingActionButton.extended(
-              onPressed: () {},
+              onPressed: () =>
+                  _showResultDialog(_dataList.length, _currentScore),
               label: const Text("Submit"),
               icon: const Icon(Icons.check),
             ),
-      body: isLoading
+      body: _isLoading
           ? const Center(
               child: CircularProgressIndicator(),
             )
-          : ListView.builder(
-              shrinkWrap: true,
-              itemBuilder: (context, index) {
-                return QuestionTile(question: dataList[index]);
-              },
-              itemCount: dataList.length,
+          : Padding(
+              padding: EdgeInsets.symmetric(
+                  horizontal: MediaQuery.of(context).size.width * 0.3),
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    for (int index = 0; index < _dataList.length; index++)
+                      QuestionTile(
+                        question: _dataList[index],
+                        onScoreChange: (qs) {
+                          if (qs < 0) return;
+
+                          _currentScore += qs;
+                        },
+                        questionIndex: index + 1,
+                      ),
+                  ],
+                ),
+              ),
             ),
     );
   }
 
-  void fetchQuestions() async {
-    dataList = await getQuestionData();
+  void _fetchQuestions() async {
+    _dataList = await getQuestionData();
     setState(() {
-      isLoading = false;
+      _isLoading = false;
     });
+  }
+
+  _showResultDialog(int totalScore, int achievedScore) {
+    String message;
+    if (achievedScore / totalScore < 0.6) {
+      message =
+          'Please go through the course again, your score is less than average.\n\n';
+    } else {
+      message = 'Well done!\n\n';
+    }
+    message += 'Maximum Score: $totalScore\nYour Score: $achievedScore';
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Assessment Result'),
+          content: Text(message),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
   }
 }
 
-class QuestionTile extends StatelessWidget {
+class QuestionTile extends StatefulWidget {
   final QuestionData question;
+  final int questionIndex;
+  final void Function(int) onScoreChange;
 
-  const QuestionTile({super.key, required this.question});
+  const QuestionTile({
+    super.key,
+    required this.question,
+    required this.onScoreChange,
+    required this.questionIndex,
+  });
+
+  @override
+  State<QuestionTile> createState() => _QuestionTileState();
+}
+
+class _QuestionTileState extends State<QuestionTile> {
+  String? _selectedAnswer;
 
   @override
   Widget build(BuildContext context) {
@@ -73,121 +132,78 @@ class QuestionTile extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(25),
       ),
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(
-              height: 32.0,
-            ),
-            Text(
-              question.questionText,
-              style: textTheme.bodyLarge?.copyWith(color: Colors.black),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8.0),
-            ...List.generate(
-                question.options.length,
-                (index) => Option(
-                      optionText: question.options[index],
-                      index: index,
-                      onOptionTap: () => checkAns(question, index),
-                      isAns: question.options[index] == question.answerText,
-                    )),
-          ],
-        ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(height: 32.0),
+          Text(
+            '${widget.questionIndex}. ${widget.question.questionText}',
+            style: textTheme.bodyLarge?.copyWith(color: Colors.black),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8.0),
+          ...List.generate(
+              widget.question.options.length,
+              (index) => Option(
+                    optionText: widget.question.options[index],
+                    index: index,
+                    selectedOption: _selectedAnswer,
+                    onChanged: _checkAns,
+                  )),
+        ],
       ),
     );
   }
 
-  bool checkAns(QuestionData question, int index) {
-    if (question.answerText == question.options[index]) {
-      currScore++;
-      print(currScore);
-      return true;
+  void _checkAns(String? newAnswer) {
+    setState(() {
+      _selectedAnswer = newAnswer;
+    });
+
+    if (_selectedAnswer == null) return;
+
+    if (_selectedAnswer == widget.question.answerText) {
+      widget.onScoreChange(1);
+      if (kDebugMode) {
+        print('Correct Answer');
+      }
     } else {
-      print("Wrong answer");
-      return false;
+      widget.onScoreChange(0);
+      if (kDebugMode) {
+        print('Correct Answer');
+      }
     }
   }
 }
 
-enum OptionStatus { UnAnswered, Right, Wrong }
-
-class Option extends StatefulWidget {
+class Option extends StatelessWidget {
   final String optionText;
+  final String? selectedOption;
   final int index;
-  final bool isAns;
-  final VoidCallback onOptionTap;
+  final ValueChanged<String?>? onChanged;
 
-  const Option(
-      {super.key,
-      required this.optionText,
-      required this.index,
-      required this.onOptionTap,
-      required this.isAns});
-
-  @override
-  State<Option> createState() => _OptionState();
-}
-
-class _OptionState extends State<Option> {
-  var currOptionStatus = OptionStatus.UnAnswered;
+  const Option({
+    super.key,
+    required this.optionText,
+    required this.index,
+    this.selectedOption,
+    this.onChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-
-    return InkWell(
-      onTap: () {
-        widget.onOptionTap();
-        if (widget.isAns) {
-          currOptionStatus = OptionStatus.Right;
-        } else {
-          currOptionStatus = OptionStatus.Wrong;
-        }
-        setState(() {});
-      },
-      child: Container(
-        margin: const EdgeInsets.only(top: 9),
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey),
-          borderRadius: BorderRadius.circular(15),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.max,
-          children: [
-            Expanded(
-              flex: 3,
-              child: Text(
-                "${widget.index + 1}. ${widget.optionText}",
-                style: textTheme.bodyMedium,
-              ),
-            ),
-            SizedBox(
-              height: 26,
-              width: 26,
-              child: (currOptionStatus == OptionStatus.UnAnswered)
-                  ? const Icon(
-                      Icons.circle_outlined,
-                      size: 16,
-                      color: Colors.grey,
-                    )
-                  : (currOptionStatus == OptionStatus.Right)
-                      ? const Icon(
-                          Icons.circle,
-                          size: 16,
-                          color: Colors.green,
-                        )
-                      : const Icon(
-                          Icons.circle,
-                          size: 16,
-                          color: Colors.red,
-                        ),
-            )
-          ],
-        ),
+    return Container(
+      margin: const EdgeInsets.only(top: 9),
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey),
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: RadioListTile(
+        title: Text("${index + 1}. $optionText"),
+        value: optionText,
+        groupValue: selectedOption,
+        onChanged: onChanged,
       ),
     );
   }
