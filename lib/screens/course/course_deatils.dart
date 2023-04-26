@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:mcq_generation_flutter/data/data/data.dart';
+import 'package:mcq_generation_flutter/data/data/data_box.dart';
 import 'package:mcq_generation_flutter/screens/assesment/assesment.dart';
+import 'package:mcq_generation_flutter/screens/course/add_course.dart';
 import 'package:mcq_generation_flutter/screens/router_utils.dart';
 
 class CourseDetailsScreen extends StatelessWidget {
+  final bool isAdmin;
   final CourseData data;
 
-  const CourseDetailsScreen({Key? key, required this.data}) : super(key: key);
+  const CourseDetailsScreen(
+      {Key? key, required this.data, required this.isAdmin})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -14,6 +19,22 @@ class CourseDetailsScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text("Course Details"),
         centerTitle: false,
+        actions: isAdmin
+            ? [
+                IconButton(
+                    onPressed: () {
+                      goTo(AddCourse(data: data), context);
+                    },
+                    icon: const Icon(Icons.edit)),
+                IconButton(
+                    onPressed: () {
+                      DataBox.courseBox
+                          .delete(data.key)
+                          .then((value) => Navigator.pop(context));
+                    },
+                    icon: const Icon(Icons.delete))
+              ]
+            : null,
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {

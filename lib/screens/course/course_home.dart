@@ -52,7 +52,9 @@ class CourseHomeScreen extends StatelessWidget {
               mainAxisSpacing: 32.0, // Set the space between the rows
               crossAxisSpacing: 32.0, // Set the space between the columns
               children: [
-                for (final c in courses) _CourseCardTile(data: c),
+                for (final c in courses)
+                  _CourseCardTile(
+                      data: c, isAdmin: (userData.email == 'admin@admin.com')),
               ],
             ),
           );
@@ -64,8 +66,10 @@ class CourseHomeScreen extends StatelessWidget {
 
 class _CourseCardTile extends StatelessWidget {
   final CourseData data;
+  final bool isAdmin;
 
-  const _CourseCardTile({Key? key, required this.data}) : super(key: key);
+  const _CourseCardTile({Key? key, required this.data, required this.isAdmin})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -109,7 +113,8 @@ class _CourseCardTile extends StatelessWidget {
             padding: const EdgeInsets.all(8.0),
             child: ElevatedButton(
               onPressed: () {
-                goTo(CourseDetailsScreen(data: data), context);
+                goTo(
+                    CourseDetailsScreen(isAdmin: isAdmin, data: data), context);
               },
               child: const Text('View Course'),
             ),

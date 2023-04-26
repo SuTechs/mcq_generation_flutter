@@ -3,7 +3,9 @@ import 'package:mcq_generation_flutter/data/data/data.dart';
 import 'package:mcq_generation_flutter/data/data/data_box.dart';
 
 class AddCourse extends StatefulWidget {
-  const AddCourse({Key? key}) : super(key: key);
+  final CourseData? data;
+
+  const AddCourse({Key? key, this.data}) : super(key: key);
 
   @override
   State<AddCourse> createState() => _AddCourseState();
@@ -15,6 +17,19 @@ class _AddCourseState extends State<AddCourse> {
   final _imageUrlCtrl = TextEditingController();
   final _courseContentCtrl = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+
+  @override
+  void initState() {
+    final data = widget.data;
+    if (data != null) {
+      _nameCtrl.text = data.name.toString();
+      _descCtrl.text = data.description;
+      _imageUrlCtrl.text = data.imageUrl;
+      _courseContentCtrl.text = data.courseContent;
+    }
+
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -228,7 +243,13 @@ class _AddCourseState extends State<AddCourse> {
       courseContent: _courseContentCtrl.text,
     );
 
-    DataBox.courseBox.add(c);
+    final oldData = widget.data;
+    if (oldData != null) {
+      DataBox.courseBox.put(oldData.key, c);
+      Navigator.pop(context);
+    } else {
+      DataBox.courseBox.add(c);
+    }
 
     Navigator.pop(context);
   }
